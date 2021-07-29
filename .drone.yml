@@ -1,0 +1,35 @@
+---
+kind: pipeline
+type: docker
+name: linux-amd64
+
+platform:
+  arch: amd64
+  os: linux
+
+steps:
+- name: build
+  image: golang:1.14.15
+  commands:
+  - echo "building docker images for ${GOOS}/${GOARCH} ..."
+  - REPO="github.com/drone/drone"
+  - go build -tags "oss nolimit" -ldflags "-extldflags \"-static\"" -o release/linux/${GOARCH}/drone-server ${REPO}/cmd/drone-server
+  environment:
+    GOARCH: amd64
+    GOOS: linux
+
+- name: publish
+  image: plugins/docker:18
+  settings:
+    auto_tag: true
+    auto_tag_suffix: linux-amd64
+    dockerfile: Dockerfile
+    repo: moderras/drone
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    event:
+    - push
+    - tag
