@@ -1,4 +1,9 @@
 # docker build --rm -f docker/Dockerfile -t drone/drone .
+FROM golang as builder
+
+RUN git clone https://github.com/drone/drone.git && \
+    cd drone && \
+    go build -tags "oss nolimit" -ldflags "-extldflags \"-static\"" -o /release/linux/amd64/drone-server github.com/drone/drone/cmd/drone-server
 
 FROM alpine:3.11 as alpine
 RUN apk add -U --no-cache ca-certificates
@@ -22,5 +27,5 @@ ENV DRONE_DATADOG_ENDPOINT=https://stats.drone.ci/api/v1/series
 
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-ADD release/linux/amd64/drone-server /bin/
+COPY --from=builder /release/linux/amd64/drone-server /bin/
 ENTRYPOINT ["/bin/drone-server"]
