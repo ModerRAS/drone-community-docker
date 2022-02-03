@@ -1,7 +1,7 @@
 pipeline {
   agent any
   triggers {
-    cron('H */4 * * 1-5')
+    cron('0 0 1 * *')
   }
   environment {
     DOCKERHUB_CREDENTIALS=credentials('7b99cc2b-e94e-4c8e-9779-fb26bbc8efdf')
